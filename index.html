@@ -2,8 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>⚽ Football Pack Opening 26</title>
+<meta name="description" content="Open packs, collect legends, build squads and compete in tournaments. Free football card game — Season 25/26 with World Cup 2026 content.">
+<meta name="theme-color" content="#f5c842">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FPO26">
+<!-- Open Graph (WhatsApp, Telegram, Discord previews) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="⚽ Football Pack Opening 26">
+<meta property="og:description" content="Open packs, collect 1,200+ player cards, build squads and compete. Free football card game with World Cup 2026 content!">
+<meta property="og:image" content="https://og-image.vercel.app/%E2%9A%BD%20Football%20Pack%20Opening%2026.png?theme=dark&md=1&fontSize=100px">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="⚽ Football Pack Opening 26">
+<meta name="twitter:description" content="Free football card game — open packs, collect legends, World Cup 2026!">
+<!-- Favicon -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -289,6 +307,7 @@ body.s1 .ntbar{background:rgba(3,10,16,.95)!important;border-bottom:0.5px solid 
     <button onclick="playBtnAnim('tournament')" style="font-family:'Bebas Neue',sans-serif;font-size:11px;padding:6px 14px;border:0.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);border-radius:20px;cursor:pointer">🏆 PLAY</button>
     <button onclick="playBtnAnim('news')" style="font-family:'Bebas Neue',sans-serif;font-size:11px;padding:6px 14px;border:0.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);border-radius:20px;cursor:pointer">📰 NEWS</button>
   </div>
+  <button onclick="shareGame()" style="margin-top:14px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:8px 24px;border:0.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border-radius:20px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='rgba(245,200,66,.5)';this.style.color='#f5c842'" onmouseout="this.style.borderColor='rgba(255,255,255,.25)';this.style.color='rgba(255,255,255,.6)'">📤 SHARE WITH FRIENDS</button>
   <!-- Summer deco: animated sun + waves -->
   <div id="seasonDeco" style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
     <!-- Sun -->
@@ -3520,6 +3539,32 @@ function playBtnAnim(targetTab){
       } else showTutorial();
     },300);
   },350);
+}
+function shareGame(){
+  const url=window.location.href;
+  const text='⚽ Football Pack Opening 26 — open packs, build squads, collect legends!\n\nPlay free: '+url;
+  if(navigator.share){
+    navigator.share({title:'Football Pack Opening 26',text:'Open packs, build squads, collect legends!',url}).catch(()=>fallbackShare(url,text));
+  } else {
+    fallbackShare(url,text);
+  }
+}
+function fallbackShare(url,text){
+  // Show a share modal
+  const m=document.createElement('div');m.className='modal-ov';
+  m.innerHTML=`<div style="background:#0d1a2a;border:0.5px solid rgba(245,200,66,.4);border-radius:18px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:40px;margin-bottom:8px">⚽</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#f5c842;letter-spacing:3px;margin-bottom:4px">SHARE THE GAME</div>
+    <div style="font-size:9px;color:rgba(255,255,255,.4);margin-bottom:14px">Send this to friends — the whole game is one file, no download needed!</div>
+    <div style="background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;margin-bottom:14px;word-break:break-all;font-size:10px;color:rgba(255,255,255,.6);text-align:left">${url}</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="copyToClipboard('${url.replace(/'/g,"\\'")}');this.textContent='✓ COPIED!';this.style.background='rgba(68,204,68,.2)';this.style.borderColor='rgba(68,204,68,.4)';this.style.color='#44cc44'" style="font-family:'Bebas Neue',sans-serif;font-size:13px;padding:10px;border:0.5px solid rgba(245,200,66,.4);background:rgba(245,200,66,.08);color:#f5c842;border-radius:12px;cursor:pointer">📋 COPY LINK</button>
+      <button onclick="window.open('https://wa.me/?text=${encodeURIComponent(text)}')" style="font-family:'Bebas Neue',sans-serif;font-size:13px;padding:10px;border:0.5px solid rgba(37,211,102,.4);background:rgba(37,211,102,.08);color:#25d366;border-radius:12px;cursor:pointer">💬 SHARE ON WHATSAPP</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent('⚽ Football Pack Opening 26 — open packs, build squads!')}')" style="font-family:'Bebas Neue',sans-serif;font-size:13px;padding:10px;border:0.5px solid rgba(0,136,204,.4);background:rgba(0,136,204,.08);color:#0088cc;border-radius:12px;cursor:pointer">✈️ SHARE ON TELEGRAM</button>
+    </div>
+    <button onclick="this.closest('.modal-ov').remove()" style="width:100%;font-family:'Bebas Neue',sans-serif;font-size:12px;padding:7px;border:0.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.35);border-radius:10px;cursor:pointer;margin-top:10px">CLOSE</button>
+  </div>`;
+  m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
 }
 function showMenu(){
   document.getElementById('app').style.display='none';
