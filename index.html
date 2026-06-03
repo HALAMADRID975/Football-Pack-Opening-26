@@ -276,7 +276,7 @@ body.s1 .ntbar{background:rgba(3,10,16,.95)!important;border-bottom:0.5px solid 
 .menu-version{position:absolute;bottom:20px;font-family:'Barlow Condensed',sans-serif;font-size:10px;color:rgba(255,255,255,.2);letter-spacing:2px}
 </style>
 
-<div id="packTunnel">
+<div id="packTunnel" onclick="if(typeof _tunnelSkipFn==='function'){var fn=_tunnelSkipFn;_tunnelSkipFn=null;fn();}else if(_tunnelPhase>0){_tunnelPhase=0;document.getElementById('packTunnel').classList.remove('active');}">
   <div class="t-ring" style="animation-delay:0s"></div>
   <div class="t-ring" style="animation-delay:.3s"></div>
   <div class="t-ring" style="animation-delay:.6s"></div>
@@ -2608,6 +2608,16 @@ function doOpen(){
   const _streakActive=window._streakBoost;
   if(_streakActive){window._streakBoost=false;packStreak=0;const se=document.getElementById('packStreak');if(se)se.style.display='none';}
   _tunnelSkipFn=null;_tunnelPhase=0;// reset skip state from previous pack
+  // Hard fallback: if animation gets stuck, force-complete after 8s
+  if(window._tunnelFallback)clearTimeout(window._tunnelFallback);
+  window._tunnelFallback=setTimeout(()=>{
+    const tunnel=document.getElementById('packTunnel');
+    if(tunnel&&tunnel.classList.contains('active')){
+      tunnel.classList.remove('active');
+      if(typeof _tunnelSkipFn==='function'){var fn=_tunnelSkipFn;_tunnelSkipFn=null;fn();}
+      else{packState='ready';const bO=document.getElementById('bO');const bN=document.getElementById('bN');if(bO)bO.disabled=false;if(bN)bN.disabled=true;}
+    }
+  },8000);
   const ph=document.getElementById('phw');ph.classList.add('shaking');
   const _packExpected=cPack.cards;
   if(!packAnimOn){
@@ -2829,7 +2839,18 @@ function doOpen(){
           if(SPEC.includes(card.rarity)){}// special card
         },60+i*120);
       });
-      updStats();document.getElementById('ht').textContent='Open another or explore other tabs';document.getElementById('bN').disabled=false;checkAch();checkSets();buildShop();updateChallengeBadge();recordWeeklyStats();
+      updStats();document.getElementById('ht').textContent='Open another or explore other tabs';document.getElementById('bN').disabled=false;checkAch();checkAchTiers();checkSets();buildShop();updateChallengeBadge();recordWeeklyStats();saveNow();
+      const dot2=document.getElementById('colNewDot');if(dot2)dot2.style.display='inline-block';
+      checkClubLoyalty();checkObjectivesAuto();checkMilestones();checkPrestige();playSound('pack');updateCollectionStreak();
+      incrementWeekly('packs');
+      if(packStreakPack===cPack?.id){packStreak++;}else{packStreak=1;packStreakPack=cPack?.id;}
+      const streakEl2=document.getElementById('packStreak');
+      if(streakEl2){streakEl2.textContent='🔥 Pack Streak: '+packStreak;streakEl2.style.display=packStreak>=2?'block':'none';}
+      if(packStreak===5)showToast('🔥','Pack Streak x5!','Next pack has boosted odds!');
+      if(packStreak>=5)window._streakBoost=true;
+      const specials2=cards.filter(c=>SPEC.includes(c.rarity)&&!['gold','silver','bronze','legendary'].includes(c.rarity));
+      if(specials2.length)incrementWeekly('specials',specials2.length);
+      recordPackHistory(cPack?cPack.name:'Pack',cards);
     };// end _showCards
   },300);// inner delay after phase1 closes
   };// end _phase2Fn
@@ -3531,13 +3552,17 @@ function playBtnAnim(targetTab){
     setTimeout(()=>p.remove(),600);
   }
   setTimeout(()=>{
-    if(menu)menu.style.animation='menuFadeOut .35s ease forwards';
+    if(menu){menu.style.animation='menuFadeOut .3s ease forwards';}
     setTimeout(()=>{
+      if(menu){menu.style.display='none';menu.style.animation='';}
       if(localStorage.getItem('fpo26_tutDone')){
         startGame();
-        if(targetTab)setTimeout(()=>goTab(targetTab),200);
-      } else showTutorial();
-    },300);
+        if(targetTab)setTimeout(()=>goTab(targetTab),100);
+      } else {
+        if(menu){menu.style.display='none';}
+        showTutorial();
+      }
+    },320);
   },350);
 }
 function shareGame(){
@@ -3592,7 +3617,8 @@ function showMenu(){
   if(qb)qb.style.display=colList.length>0?'flex':'none';
 }
 function startGame(){
-  document.getElementById('menuScreen').style.display='none';
+  const ms=document.getElementById('menuScreen');
+  if(ms){ms.style.display='none';ms.style.animation='';ms.style.opacity='';ms.style.pointerEvents='none';}
   document.getElementById('app').style.display='block';
   checkSaveConflict();
   updStats();buildShop();renderAch();
@@ -4578,7 +4604,7 @@ function createCustomCard(){
 
 // ═══ SOUND EFFECTS ═══
 // ═══ SETTINGS ═══
-let packAnimOn=true;
+let packAnimOn=false;
 function toggleSettings(){
   const p=document.getElementById('settingsPanel');
   p.style.display=p.style.display==='none'?'block':'none';
@@ -4608,7 +4634,7 @@ function showTutorial(){
   const show=()=>{
     const s=steps[step];
     let m=document.getElementById('tutModal');
-    if(!m){m=document.createElement('div');m.id='tutModal';m.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:20px';document.body.appendChild(m);}
+    if(!m){m=document.createElement('div');m.id='tutModal';m.style.cssText='position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:20px';document.body.appendChild(m);}
     m.innerHTML=`<div style="background:linear-gradient(135deg,#0d1a2a,#0a1220);border:1px solid rgba(245,200,66,.4);border-radius:20px;padding:28px;max-width:360px;width:100%;text-align:center">
       <div style="font-size:48px;margin-bottom:12px">${s.icon}</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:#f5c842;margin-bottom:12px">${s.title}</div>
