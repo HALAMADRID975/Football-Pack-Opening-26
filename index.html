@@ -532,6 +532,11 @@ body.light-mode .modal-ov{background:rgba(0,0,0,.6)!important}
         <button id="animToggleBtn" onclick="togglePackAnim()" style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:5px 16px;border-radius:20px;cursor:pointer;border:0.5px solid #44cc44;background:rgba(68,204,68,.15);color:#44cc44">ON</button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:10px">
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#fff;letter-spacing:1px">📜 PACK HISTORY</div>
+        <div style="font-size:8px;color:rgba(255,255,255,.35);margin-top:2px">See every pack you've opened</div></div>
+        <button onclick="showPackHistory()" style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:5px 16px;border-radius:20px;cursor:pointer;border:0.5px solid #f5c842;background:rgba(245,200,66,.15);color:#f5c842">VIEW</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:10px">
         <div><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#fff;letter-spacing:1px">🎓 TUTORIAL</div>
         <div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px">Replay the intro tutorial</div></div>
         <button onclick="localStorage.removeItem('fpo26_tutDone');toggleSettings();showTutorial()" style="font-family:'Bebas Neue',sans-serif;font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;border:0.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);font-family:'Bebas Neue',sans-serif">REPLAY</button>
@@ -6422,6 +6427,15 @@ function logReward(source,label,coinsAmt,packIds){
   }catch(e){}
 }
 function getRewardLog(){try{return JSON.parse(localStorage.getItem('fpo26_reward_log')||'[]');}catch(e){return[];}}
+function logPackOpen(pack,cardMeta){
+  try{
+    const log=JSON.parse(localStorage.getItem('fpo26_pack_log')||'[]');
+    log.unshift({packId:pack.id,packName:pack.name,cards:cardMeta.map(({card})=>({name:card.name,rarity:card.rarity,rating:card.rating})),date:new Date().toISOString()});
+    if(log.length>200)log.length=200;// keep most recent 200
+    localStorage.setItem('fpo26_pack_log',JSON.stringify(log));
+  }catch(e){}
+}
+function getPackLog(){try{return JSON.parse(localStorage.getItem('fpo26_pack_log')||'[]');}catch(e){return[];}}
 function queueFreePack(packId){
   if(!window._freePackQueue)window._freePackQueue=[];
   window._freePackQueue.push(packId);
@@ -7033,6 +7047,7 @@ function doOpen(){
       cards.forEach(c=>{if(c.rating>br)br=c.rating;if(c.rarity==='legendary')trackCh('legendaries');if(SPEC.includes(c.rarity))trackCh('specials');if(c.rarity==='world_cup')trackCh('world_cup');if(c.rarity==='ucl')trackCh('ucl');});
       const cardMeta=cards.map(card=>({card,dup:isDup(card),isSpec:SPEC.includes(card.rarity)}));
       cardMeta.forEach(({card})=>addCard(card));
+      logPackOpen(cPack,cardMeta);
       const row=document.getElementById('cr');row.innerHTML='';
       // Check for legendary or special pulls
       const hasLegendary=cardMeta.some(({card})=>['legendary','icon','ballon_dor','toty_25','icon_toty'].includes(card.rarity));
@@ -7137,6 +7152,7 @@ function doOpen(){
     const row=document.getElementById('cr');row.innerHTML='';
     // Pre-calculate dup status BEFORE adding to collection
     const cardMeta=cards.map(card=>({card,dup:isDup(card),isSpec:SPEC.includes(card.rarity)}));
+    logPackOpen(cPack,cardMeta);
     // Find best card for the spotlight reveal
     const bestCard=cards.reduce((b,c)=>c.rating>b.rating?c:b,cards[0]);
     const bestRc=RC[bestCard.rarity]||'#f5c842';
@@ -12760,6 +12776,31 @@ function showNotifications(){
       <div style="flex:1"><div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#fff">${n.title}</div>
       <div style="font-size:8px;color:rgba(255,255,255,.45)">${n.body}</div></div>
       <div style="font-size:7.5px;color:rgba(255,255,255,.25);flex-shrink:0">${agoStr}</div>
+    </div>`;
+  }).join('')}
+  <button onclick="this.closest('.modal-ov').remove()" style="width:100%;font-family:'Bebas Neue',sans-serif;font-size:13px;padding:8px;border:0.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;cursor:pointer;margin-top:10px">CLOSE</button>`;
+  m.appendChild(inner);m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
+}
+function showPackHistory(){
+  const log=getPackLog();
+  const m=document.createElement('div');m.className='modal-ov';
+  const inner=document.createElement('div');
+  inner.style.cssText='background:#0d1a2a;border:0.5px solid rgba(255,255,255,.2);border-radius:18px;padding:18px;max-width:360px;width:100%;max-height:80vh;overflow-y:auto';
+  inner.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#f5c842;letter-spacing:3px">📜 PACK HISTORY</div>
+    <button onclick="localStorage.removeItem('fpo26_pack_log');this.closest('.modal-ov').remove();showPackHistory()" style="font-size:9px;color:rgba(255,255,255,.3);background:transparent;border:none;cursor:pointer">CLEAR ALL</button>
+  </div>
+  ${!log.length?'<div style="text-align:center;color:rgba(255,255,255,.3);padding:20px;font-size:10px">No packs opened yet</div>':
+  log.map(h=>{
+    const ago=Math.floor((Date.now()-new Date(h.date).getTime())/60000);
+    const agoStr=ago<1?'just now':ago<60?ago+'m ago':ago<1440?Math.floor(ago/60)+'h ago':Math.floor(ago/1440)+'d ago';
+    const cardsStr=h.cards.map(c=>`${c.name} (${c.rarity})`).join(', ');
+    return`<div style="padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,.06)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:#fff">${h.packName}</div>
+        <div style="font-size:7.5px;color:rgba(255,255,255,.25);flex-shrink:0">${agoStr}</div>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,.45);margin-top:2px">${cardsStr}</div>
     </div>`;
   }).join('')}
   <button onclick="this.closest('.modal-ov').remove()" style="width:100%;font-family:'Bebas Neue',sans-serif;font-size:13px;padding:8px;border:0.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;cursor:pointer;margin-top:10px">CLOSE</button>`;
