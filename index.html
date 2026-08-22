@@ -602,7 +602,7 @@ body.light-mode .modal-ov{background:rgba(0,0,0,.6)!important}
     <button class="nt" id="tNews" onclick="goTab('news')">📰 NEWS</button>
     <button class="nt" id="tCollection" onclick="goTab('col')">📂 CARDS<span id="colNewDot" style="display:none;position:absolute;top:2px;right:2px;width:7px;height:7px;background:#ff4444;border-radius:50%"></span></button>
     <button class="nt" id="tSeasonPass" onclick="goTab('seasonpass')">🎫 SEASON PASS</button>
-    <button class="nt" id="tChallenge" onclick="goTab('tasks')">📋 TASKS</button>
+    <button class="nt" id="tChallenge" onclick="goTab('tasks')" style="position:relative">📋 TASKS<span id="challengeDot" style="display:none;position:absolute;top:2px;right:2px;width:7px;height:7px;background:#ff4444;border-radius:50%;animation:pulse 1.5s infinite"></span></button>
     <button class="nt" id="tTrade" onclick="goTab('trade')">🔄 TRADE</button>
     <button class="nt" id="tStore" onclick="goTab('store')">💰 STORE</button>
     <button class="nt" id="tMarket" onclick="goTab('market')">🏪 MARKET</button>
@@ -6446,6 +6446,14 @@ function updateRewardsDot(){
   if(!dot)return;
   const count=(window._freePackQueue||[]).length;
   dot.style.display=count>0?'block':'none';
+}
+function updateChallengeBadge(){
+  const dot=document.getElementById('challengeDot');
+  if(!dot)return;
+  const chDone=CHALLENGES.some(ch=>Math.min(getChStat(ch.stat),ch.target)>=ch.target&&!challengeClaimed[ch.id]);
+  const sqAvg=getStat('sq_avg');
+  const sqDone=[80,85,88,91].some(min=>sqAvg>=min&&!challengeClaimed['sq_'+min]);
+  dot.style.display=(chDone||sqDone)?'block':'none';
 }
 function renderRewardsTab(){
   const wrap=document.getElementById('rewardsWrap');
